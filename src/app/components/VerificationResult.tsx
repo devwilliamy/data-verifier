@@ -6,39 +6,47 @@ interface VerificationResultProps {
 }
 
 export default function VerificationResult({ result }: VerificationResultProps) {
-  const hasCSVDuplicates = result.duplicates.length > 0;
-  const hasSupabaseDuplicates = result.supabaseDuplicates.length > 0;
-
   return (
     <div className="bg-white shadow-md rounded-lg p-6 mt-6">
       <h2 className="text-xl font-bold mb-4">Verification Result</h2>
-      <div className={`p-4 rounded-md ${result.isUnique ? 'bg-green-100' : 'bg-red-100'}`}>
-        <p className={`text-lg font-semibold ${result.isUnique ? 'text-green-700' : 'text-red-700'}`}>
-          IDs are {result.isUnique ? 'unique' : 'not unique'}
-        </p>
-      </div>
-      {(hasCSVDuplicates || hasSupabaseDuplicates) && (
-        <div className="mt-4 space-y-4">
-          {hasCSVDuplicates && (
-            <div>
-              <p className="font-semibold text-gray-700">Duplicate IDs in CSV:</p>
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                {result.duplicates.map((dup, index) => (
-                  <li key={index} className="text-sm text-gray-600">{dup}</li>
+      
+      {result.matches.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Matched Rows with Differences</h3>
+          {result.matches.map((match, index) => (
+            <div key={index} className="bg-yellow-100 p-3 rounded mb-2">
+              <p className="font-medium">ID: {match.id} (CSV Row: {match.csvRow})</p>
+              <ul className="list-disc list-inside">
+                {Object.entries(match.differences).map(([column, values]) => (
+                  <li key={column}>
+                    {column}: CSV: {values.csv}, Supabase: {values.supabase}
+                  </li>
                 ))}
               </ul>
             </div>
-          )}
-          {hasSupabaseDuplicates && (
-            <div>
-              <p className="font-semibold text-gray-700">IDs already in Supabase:</p>
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                {result.supabaseDuplicates.map((dup, index) => (
-                  <li key={index} className="text-sm text-gray-600">{dup}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          ))}
+        </div>
+      )}
+      
+      {result.unmatchedCSVRows.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Unmatched CSV Rows</h3>
+          <ul className="list-disc list-inside">
+            {result.unmatchedCSVRows.map((row, index) => (
+              <li key={index}>{row}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      {result.unmatchedSupabaseIds.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Unmatched Supabase IDs</h3>
+          <ul className="list-disc list-inside">
+            {result.unmatchedSupabaseIds.map((id, index) => (
+              <li key={index}>{id}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
