@@ -1,6 +1,7 @@
 export interface VerificationResult {
     isUnique: boolean;
     duplicates: string[];
+    supabaseDuplicates: string[];
   }
   
   export interface CSVRow {
