@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@types/papaparse": "^5.3.14",
     "next": "14.2.5",
+    "papaparse": "^5.4.1",
     "react": "^18",
     "react-dom": "^18"
   },
