@@ -21,7 +21,11 @@ export default function VerificationConfig({
   });
   const [supabaseTables, setSupabaseTables] = useState<string[]>([]);
   const [supabaseColumns, setSupabaseColumns] = useState<string[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
+  useEffect(() => {
+    fetchSupabaseTables();
+  }, []);
   useEffect(() => {
     fetchSupabaseTables();
   }, []);
@@ -37,14 +41,30 @@ export default function VerificationConfig({
   }, [config, onConfigChange]);
 
   async function fetchSupabaseTables() {
-    const { data, error } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public');
-    if (error) {
+    setFetchError(null);
+    try {
+      const { data, error } = await supabase
+        .from('information_schema.tables')
+        .select('table_name')
+        .eq('table_schema', 'public');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        const tableNames = data.map((table) => table.table_name);
+        setSupabaseTables(tableNames);
+        console.log('Fetched tables:', tableNames); // Log fetched tables
+      } else {
+        setSupabaseTables([]);
+        console.log('No tables found');
+      }
+    } catch (error) {
       console.error('Error fetching Supabase tables:', error);
-    } else {
-      setSupabaseTables(data.map((table) => table.table_name));
+      setFetchError(
+        'Failed to fetch Supabase tables. Please check your connection and permissions.'
+      );
     }
   }
 
@@ -69,7 +89,14 @@ export default function VerificationConfig({
       <h2 className="mb-4 text-xl font-bold text-gray-800">
         Verification Configuration
       </h2>
-
+      {fetchError && (
+        <div
+          className="rounded border-l-4 border-red-500 bg-red-100 p-4 text-red-700"
+          role="alert"
+        >
+          <p>{fetchError}</p>
+        </div>
+      )}
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
           CSV ID Column
@@ -113,6 +140,11 @@ export default function VerificationConfig({
             </option>
           ))}
         </select>
+        {supabaseTables.length === 0 && !fetchError && (
+          <p className="mt-1 text-sm text-gray-500">
+            No tables found. Make sure you have tables in your Supabase project.
+          </p>
+        )}
       </div>
 
       {config.supabaseTable && (
