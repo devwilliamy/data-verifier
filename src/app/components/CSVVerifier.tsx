@@ -27,10 +27,18 @@ export default function CSVVerifier() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      {result && <VerificationResult result={result} />}
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+          <p>{error}</p>
+        </div>
+      )}
+      {result && (
+        <div className="transition-all duration-500 ease-in-out transform">
+          <VerificationResult result={result} />
+        </div>
+      )}
     </div>
   );
 }
