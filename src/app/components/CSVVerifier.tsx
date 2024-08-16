@@ -48,23 +48,34 @@ export default function CSVVerifier() {
   };
 
   return (
-    <div className="space-y-6">
-      <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+    <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">CSV File Upload</h2>
+        <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+      </div>
+
       {csvHeaders.length > 0 && (
         <VerificationConfig onConfigChange={setConfig} csvHeaders={csvHeaders} />
       )}
-      <button
-        onClick={handleVerify}
-        disabled={isLoading || !file || !config}
-        className="px-4 py-2 font-semibold text-sm bg-blue-500 text-white rounded-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoading ? 'Verifying...' : 'Verify CSV'}
-      </button>
+
+      {csvHeaders.length > 0 && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleVerify}
+            disabled={isLoading || !file || !config}
+            className="px-6 py-2 font-semibold text-sm bg-blue-500 text-white rounded-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Verifying...' : 'Verify CSV'}
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
           <p>{error}</p>
         </div>
       )}
+
       {result && (
         <div className="transition-all duration-500 ease-in-out transform">
           <VerificationResult result={result} />
