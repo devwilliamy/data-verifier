@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { VerificationConfig } from '../types';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase/supabase';
 
 interface VerificationConfigProps {
   onConfigChange: (config: VerificationConfig) => void;
@@ -26,9 +26,6 @@ export default function VerificationConfig({
   useEffect(() => {
     fetchSupabaseTables();
   }, []);
-  useEffect(() => {
-    fetchSupabaseTables();
-  }, []);
 
   useEffect(() => {
     if (config.supabaseTable) {
@@ -43,19 +40,19 @@ export default function VerificationConfig({
   async function fetchSupabaseTables() {
     setFetchError(null);
     try {
-      const { data, error } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public');
+      const { data, error } = await supabase.rpc('get_public_tables');
 
       if (error) {
         throw error;
       }
 
       if (data) {
-        const tableNames = data.map((table) => table.table_name);
+        // Extract table names from the returned objects
+        const tableNames = data.map(
+          (item: { table_name: string }) => item.table_name
+        );
         setSupabaseTables(tableNames);
-        console.log('Fetched tables:', tableNames); // Log fetched tables
+        console.log('Fetched tables:', tableNames);
       } else {
         setSupabaseTables([]);
         console.log('No tables found');
@@ -69,15 +66,32 @@ export default function VerificationConfig({
   }
 
   async function fetchSupabaseColumns(table: string) {
-    const { data, error } = await supabase
-      .from('information_schema.columns')
-      .select('column_name')
-      .eq('table_name', table)
-      .eq('table_schema', 'public');
-    if (error) {
+    setFetchError(null);
+    try {
+      const { data, error } = await supabase.rpc('get_table_columns', {
+        p_table_name: table,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        // Extract column names from the returned objects
+        const columnNames = data.map(
+          (item: { column_name: string }) => item.column_name
+        );
+        setSupabaseColumns(columnNames);
+        console.log('Fetched columns:', columnNames);
+      } else {
+        setSupabaseColumns([]);
+        console.log('No columns found');
+      }
+    } catch (error) {
       console.error('Error fetching Supabase columns:', error);
-    } else {
-      setSupabaseColumns(data.map((column) => column.column_name));
+      setFetchError(
+        'Failed to fetch Supabase columns. Please check your table name and permissions.'
+      );
     }
   }
 
@@ -140,11 +154,6 @@ export default function VerificationConfig({
             </option>
           ))}
         </select>
-        {supabaseTables.length === 0 && !fetchError && (
-          <p className="mt-1 text-sm text-gray-500">
-            No tables found. Make sure you have tables in your Supabase project.
-          </p>
-        )}
       </div>
 
       {config.supabaseTable && (
